@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscador Multi-Tienda España</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --accent-color: #3b82f6;
+      --accent-hover: #2563eb;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 24px 16px;
+      max-width: 1000px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .search-box-container {
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      background: rgba(30, 41, 59, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      margin-bottom: 24px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 14px 18px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: #0f172a;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent-color);
+    }
+
+    button.btn-search {
+      padding: 14px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      background-color: var(--accent-color);
+      color: #ffffff;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    button.btn-search:hover {
+      background-color: var(--accent-hover);
+    }
+
+    button.btn-search:active {
+      transform: scale(0.98);
+    }
+
+    .notice {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.1);
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .global-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text-main);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .category-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .category-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    .store-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .store-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      user-select: none;
+      padding: 4px 0;
+    }
+
+    .store-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-color);
+      cursor: pointer;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Buscador Multi-Tienda España</h1>
+    <p class="subtitle">Busca un producto simultáneamente en decenas de tiendas y marketplaces con apertura escalonada anti-bloqueo.</p>
+  </header>
+
+  <div class="search-box-container">
+    <div class="search-row">
+      <input type="text" id="query" placeholder="Escribe el modelo o producto que buscas..." autofocus onkeydown="if(event.key==='Enter') searchAll()">
+      <button class="btn-search" onclick="searchAll()">🔍 Buscar en <span id="selected-count">0</span> tiendas</button>
+    </div>
+    <div class="notice">
+      <span>⚠️ <b>Apertura progresiva (1000ms delay):</b> Las pestañas se abren de forma escalonada para no colapsar el router, DNS ni el antivirus.</span>
+      <span>⚠️ <b>Nota:</b> Si alguna pestaña no se abre, autoriza las ventanas emergentes (pop-ups) en tu navegador.</span>
+    </div>
+  </div>
+
+  <div class="global-controls">
+    <div>
+      <button class="btn-secondary" onclick="selectAll(true)">Seleccionar todas</button>
+      <button class="btn-secondary" onclick="selectAll(false)">Desmarcar todas</button>
+      <button class="btn-secondary" onclick="resetToDefault()">Predeterminados</button>
+    </div>
+    <span style="color: var(--text-muted); font-size: 0.9rem;" id="total-stores-info"></span>
+  </div>
+
+  <div class="categories-grid" id="categories-container">
+    <!-- Generado dinámicamente -->
+  </div>
+
+  <footer>
+    <p>Guarda este archivo en tus marcadores de navegador para usarlo siempre que quieras comparar precios.</p>
+  </footer>
+
+  <script>
+    const storeData = [
+      {
+        category: "Tecnología y Electrónica",
+        stores: [
+          { name: "Amazon España", url: "https://www.amazon.es/s?k=", defaultChecked: true },
+          { name: "PcComponentes", url: "https://www.pccomponentes.com/buscar/?query=", defaultChecked: true },
+          { name: "MediaMarkt", url: "https://www.mediamarkt.es/es/search.html?query=", defaultChecked: true },
+          { name: "El Corte Inglés (Tecno)", url: "https://www.elcorteingles.es/busqueda/?s=", defaultChecked: true },
+          { name: "Fnac España", url: "https://www.fnac.es/SearchResult/ResultList.aspx?Search=", defaultChecked: true },
+          { name: "Coolmod", url: "https://www.coolmod.com/buscar/?q=", defaultChecked: false },
+          { name: "Worten", url: "https://www.worten.es/search?query=", defaultChecked: false },
+          { name: "GAME", url: "https://www.game.es/buscar/", defaultChecked: false }
+        ]
+      },
+      {
+        category: "Segunda Mano y Mercado C2C",
+        stores: [
+          { name: "Wallapop", url: "https://es.wallapop.com/app/search?keywords=", defaultChecked: true },
+          { name: "Milanuncios", url: "https://www.milanuncios.com/anuncios/?s=", defaultChecked: true },
+          { name: "Vinted", url: "https://www.vinted.es/catalog?search_text=", defaultChecked: false },
+          { name: "eBay España", url: "https://www.ebay.es/sch/i.html?_nkw=", defaultChecked: false },
+          { name: "Cash Converters", url: "https://www.cashconverters.es/es/es/segunda-mano/?q=", defaultChecked: false }
+        ]
+      },
+      {
+        category: "Grandes Superficies y Marketplaces",
+        stores: [
+          { name: "Carrefour España", url: "https://www.carrefour.es/?q=", defaultChecked: true },
+          { name: "Miravia", url: "https://www.miravia.es/catalog/?q=", defaultChecked: true },
+          { name: "AliExpress España", url: "https://es.aliexpress.com/wholesale?SearchText=", defaultChecked: true },
+          { name: "Temu España", url: "https://www.temu.com/es/search_result.html?search_key=", defaultChecked: true },
+          { name: "Alcampo", url: "https://www.compraonline.alcampo.es/search?q=", defaultChecked: false }
+        ]
+      },
+      {
+        category: "Reacondicionados",
+        stores: [
+          { name: "Back Market", url: "https://www.backmarket.es/es-es/search?q=", defaultChecked: true },
+          { name: "Refurbed", url: "https://www.refurbed.es/s/", defaultChecked: false },
+          { name: "Amazon Warehouse", url: "https://www.amazon.es/s?i=warehouse-deals&k=", defaultChecked: true }
+        ]
+      },
+      {
+        category: "Hogar, Bricolaje y Muebles",
+        stores: [
+          { name: "Leroy Merlin", url: "https://www.leroymerlin.es/busqueda?q=", defaultChecked: false },
+          { name: "Brico Depôt", url: "https://www.bricodepot.es/search?q=", defaultChecked: false },
+          { name: "IKEA España", url: "https://www.ikea.com/es/es/search/?q=", defaultChecked: false },
+          { name: "Obramat / Bricomart", url: "https://www.obramat.es/catalogsearch/result/?q=", defaultChecked: false },
+          { name: "Maison du Monde", url: "https://www.maisonsdumonde.com/ES/es/s/", defaultChecked: false }
+        ]
+      },
+      {
+        category: "Deportes, Moda y Estilo",
+        stores: [
+          { name: "Decathlon España", url: "https://www.decathlon.es/es/search?Ntt=", defaultChecked: false },
+          { name: "Zalando España", url: "https://www.zalando.es/catalogo/?q=", defaultChecked: false },
+          { name: "Zara", url: "https://www.zara.com/es/es/search?searchTerm=", defaultChecked: false },
+          { name: "Springfield", url: "https://myspringfield.com/es/es/search?q=", defaultChecked: false }
+        ]
+      },
+      {
+        category: "Perfumería y Mascotas",
+        stores: [
+          { name: "Primor", url: "https://www.primor.eu/es_es/search?q=", defaultChecked: false },
+          { name: "Druni", url: "https://www.druni.es/catalogsearch/result/?q=", defaultChecked: false },
+          { name: "Kiwoko", url: "https://www.kiwoko.com/catalogsearch/result/?q=", defaultChecked: false },
+          { name: "Tiendanimal", url: "https://www.tiendanimal.es/search?q=", defaultChecked: false }
+        ]
+      },
+      {
+        category: "Ofertas y Chollos",
+        stores: [
+          { name: "Chollometro", url: "https://www.chollometro.com/buscar?q=", defaultChecked: true }
+        ]
+      }
+    ];
+
+    function renderCategories() {
+      const container = document.getElementById('categories-container');
+      container.innerHTML = '';
+      const savedState = JSON.parse(localStorage.getItem('multiStoreSavedState') || '{}');
+
+      let totalStoresCount = 0;
+
+      storeData.forEach((cat, catIdx) => {
+        const card = document.createElement('div');
+        card.className = 'category-card';
+
+        let storeItemsHTML = '';
+        cat.stores.forEach((store, storeIdx) => {
+          totalStoresCount++;
+          const storeId = `store_${catIdx}_${storeIdx}`;
+          const isChecked = savedState.hasOwnProperty(storeId) ? savedState[storeId] : store.defaultChecked;
+          storeItemsHTML += `
+            <label class="store-item">
+              <input type="checkbox" id="${storeId}" class="store-checkbox" value="${store.url}" ${isChecked ? 'checked' : ''} onchange="updateCountAndSave()">
+              <span>${store.name}</span>
+            </label>
+          `;
+        });
+
+        card.innerHTML = `
+          <div class="category-header">
+            <span class="category-title">${cat.category}</span>
+            <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;" onclick="toggleCategory(${catIdx}, true)">Toda cat.</button>
+          </div>
+          <div class="store-list">
+            ${storeItemsHTML}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('total-stores-info').innerText = `${totalStoresCount} tiendas disponibles`;
+      updateCount();
+    }
+
+    function updateCountAndSave() {
+      updateCount();
+      const savedState = {};
+      document.querySelectorAll('.store-checkbox').forEach(cb => {
+        savedState[cb.id] = cb.checked;
+      });
+      localStorage.setItem('multiStoreSavedState', JSON.stringify(savedState));
+    }
+
+    function updateCount() {
+      const checkedCount = document.querySelectorAll('.store-checkbox:checked').length;
+      document.getElementById('selected-count').innerText = checkedCount;
+    }
+
+    function selectAll(check) {
+      document.querySelectorAll('.store-checkbox').forEach(cb => {
+        cb.checked = check;
+      });
+      updateCountAndSave();
+    }
+
+    function toggleCategory(catIdx, check) {
+      const card = document.querySelectorAll('.category-card')[catIdx];
+      card.querySelectorAll('.store-checkbox').forEach(cb => {
+        cb.checked = check;
+      });
+      updateCountAndSave();
+    }
+
+    function resetToDefault() {
+      localStorage.removeItem('multiStoreSavedState');
+      renderCategories();
+    }
+
+    function searchAll() {
+      const queryVal = document.getElementById('query').value.trim();
+      if (!queryVal) {
+        alert('Por favor, escribe un término de búsqueda.');
+        return;
+      }
+      const query = encodeURIComponent(queryVal);
+      const selectedStores = document.querySelectorAll('.store-checkbox:checked');
+      
+      if (selectedStores.length === 0) {
+        alert('Por favor, selecciona al menos una tienda.');
+        return;
+      }
+
+      // Apertura escalonada con delay de 1000ms entre cada pestaña
+      selectedStores.forEach((cb, index) => {
+        setTimeout(() => {
+          window.open(cb.value + query, '_blank');
+        }, index * 1000);
+      });
+    }
+
+    // Inicializar al cargar
+    renderCategories();
+  </script>
+</body>
+</html>
